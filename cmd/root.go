@@ -18,9 +18,7 @@ var rootCmd = &cobra.Command{
 	Long: `wyag - write yourself a git is a git client written in golang,
 				  written by me for learning git internals better.
 				  All inspiration comes from this post https://wyag.thb.lt/`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("hejsvej")
-	},
+	Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
