@@ -16,7 +16,7 @@ func New() *gitRepository {
 	return &gitRepository{}
 }
 
-func (r *gitRepository) repoDir(path string) (*string, error) {
+func (r *gitRepository) repoDir(path string, create bool) (*string, error) {
 	path = r.repoPath(path)
 	fileinfo, err := os.Stat(path)
 	if err == nil { // file/dir exists
@@ -26,15 +26,25 @@ func (r *gitRepository) repoDir(path string) (*string, error) {
 		return &path, nil
 	}
 
-	err = os.MkdirAll(path, 0770)
-	if err != nil {
-		return nil, err
+	if create {
+		err = os.MkdirAll(path, 0770)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &path, nil
 }
 
 func (r *gitRepository) repoPath(path string) string {
 	return filepath.Join(r.gitDir, path)
+}
+
+func (r *gitRepository) repoFile(path string, create bool) string {
+	_, err := r.repoDir(filepath.Dir(path), create)
+	if err != nil {
+		return ""
+	}
+	return path
 }
 
 func isEmptyDir(path string) bool {

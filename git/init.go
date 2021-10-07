@@ -47,10 +47,10 @@ func (r *gitRepository) create() error {
 		os.MkdirAll(r.worktree, 0770)
 	}
 
-	r.repoDir("branches")
-	r.repoDir("objects")
-	r.repoDir("refs/tags")
-	r.repoDir("refs/heads")
+	r.repoDir("branches", true)
+	r.repoDir("objects", true)
+	r.repoDir("refs/tags", true)
+	r.repoDir("refs/heads", true)
 
 	desc := []byte("Unnamed repository; edit this file 'description' to name the repository.\n")
 	err = os.WriteFile(r.repoPath("description"), desc, 0644)
