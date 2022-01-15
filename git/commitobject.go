@@ -23,11 +23,11 @@ func NewCommitObject(repo *Repository, data io.Reader) *commitObject {
 }
 
 func (o *commitObject) Deserialize(data io.Reader) {
-	o.data = data
+	o.kvlm = ParseKeyValueListWithMessage(data)
 }
 
 func (o *commitObject) Serialize() io.Reader {
-	return o.data
+	return KeyValueListWithMessageSerialize(*o.kvlm)
 }
 
 func (o *commitObject) String() string {
