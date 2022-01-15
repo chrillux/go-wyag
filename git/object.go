@@ -1,81 +1,129 @@
 package git
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/sha1"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
 )
 
-type IGitObject interface {
-	serialize(data []byte) error
-	deserialize()
-	getHash() string
-	getSerializedData() []byte
+type Object struct {
+	serializedData   []byte
+	deserializedData []byte
+	dataLen          int
+	hash             string
+	objType          string
 }
 
-type Factory struct {
-	obj IGitObject
-}
-
-func (f *Factory) serialize(data []byte) error {
-	err := f.obj.serialize(data)
+func (o *Object) serialize(data io.Reader) error {
+	buf, err := ioutil.ReadAll(data)
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (f *Factory) deserialize() {
-	f.obj.deserialize()
-}
-
-func (f *Factory) getHash() string {
-	return f.obj.getHash()
-}
-
-func (f *Factory) getSerializedData() []byte {
-	return f.obj.getSerializedData()
-}
-
-type BlobObject struct {
-	serializedData []byte
-	dataLen        int
-	hash           string
-}
-
-func (b *BlobObject) serialize(data []byte) error {
-	rawdatar := bytes.NewReader(data)
-	buf, err := ioutil.ReadAll(rawdatar)
-	if err != nil {
-		return err
-	}
-	b.dataLen = len(buf)
-	sd := []byte(strings.Join([]string{"blob", fmt.Sprintf("%d", b.dataLen)}, " "))
+	o.dataLen = len(buf)
+	sd := []byte(strings.Join([]string{o.objType, fmt.Sprintf("%d", o.dataLen)}, " "))
 	sd = append(sd, byte(0))
 	sd = append(sd, buf...)
-	b.hash = fmt.Sprintf("%x", sha1.Sum(sd))
-	b.serializedData = sd
+	o.hash = fmt.Sprintf("%x", sha1.Sum(sd))
+	o.serializedData = sd
 	return nil
 }
 
-func (b *BlobObject) deserialize() {
-	fmt.Println("commit deserialize")
-}
-
-func (b *BlobObject) getHash() string {
-	return b.hash
-}
-
-func (b *BlobObject) getSerializedData() []byte {
-	return b.serializedData
-}
-
-func NewObject(objType string) *Factory {
-	switch objType {
-	case "blob":
-		return &Factory{&BlobObject{}}
+func (o *Object) deserialize(data io.Reader) error {
+	buf, err := ioutil.ReadAll(data)
+	if err != nil {
+		return err
 	}
+	ispace := bytes.IndexByte(buf, byte(32))
+	if ispace < 0 {
+		return fmt.Errorf("could not deserialize data")
+	}
+	o.objType = string(buf[0:ispace])
+
+	inull := bytes.IndexByte(buf, byte(0))
+	if inull < 0 {
+		return fmt.Errorf("could not deserialize data")
+	}
+	o.dataLen, err = strconv.Atoi(string(buf[ispace+1 : inull]))
+	if err != nil {
+		return err
+	}
+	o.deserializedData = buf[inull+1:]
+
 	return nil
+}
+
+func (o *Object) getHash() string {
+	return o.hash
+}
+
+func (o *Object) getSerializedData() []byte {
+	return o.serializedData
+}
+
+func (o *Object) GetObjType() string {
+	return o.objType
+}
+
+func (o *Object) GetDeserializedData() string {
+	return string(o.deserializedData)
+}
+
+type KVLM struct {
+	KeyValues []KV
+	Message   string
+}
+
+type KV struct {
+	Key   string
+	Value string
+}
+
+func ParseKeyValueListWithMessage(data io.Reader) *KVLM {
+	s := bufio.NewScanner(data)
+	curSlice := []string{}
+	var key string
+	messageFound := false
+	mSlice := []string{}
+
+	kvlm := KVLM{}
+	kv := KV{}
+	for s.Scan() {
+		line := s.Text()
+		if messageFound {
+			mSlice = append(mSlice, line)
+			continue
+		}
+		if strings.HasPrefix(line, " ") {
+			curSlice = append(curSlice, line)
+			continue
+		} else if !strings.Contains(line, " ") {
+			kv.Value = strings.Join(curSlice, "\n")
+			fmt.Println(strings.Join(curSlice, "\n"))
+			kvlm.KeyValues = append(kvlm.KeyValues, kv)
+			messageFound = true
+			continue
+		} else if len(curSlice) > 0 {
+			fmt.Println(key, strings.Join(curSlice, "\n"))
+			kv.Value = strings.Join(curSlice, "\n")
+			kvlm.KeyValues = append(kvlm.KeyValues, kv)
+			curSlice = []string{}
+		}
+		lslice := strings.Split(line, " ")
+		if len(lslice) > 1 {
+			key = lslice[0]
+			kv.Key = lslice[0]
+			newSlice := []string{}
+			for i := 1; i < len(lslice); i++ {
+				newSlice = append(newSlice, lslice[i])
+			}
+			curSlice = append(curSlice, strings.Join(newSlice, " "))
+		}
+	}
+	kvlm.Message = strings.Join(mSlice, "\n")
+	return &kvlm
 }

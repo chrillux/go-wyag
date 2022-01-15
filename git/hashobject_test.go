@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -8,31 +9,31 @@ import (
 )
 
 func TestBlobObject_serialize(t *testing.T) {
-	rd := []byte("foobar")
+	rd := bytes.NewBuffer([]byte("foobar"))
 	tests := []struct {
 		name string
-		b    *BlobObject
+		o    *Object
 	}{
 		{
 			name: "serialize blob",
-			b:    &BlobObject{},
+			o:    &Object{objType: "blob"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.b.serialize(rd)
+			err := tt.o.serialize(rd)
 			if err != nil {
 				fmt.Printf("error burrr: %v\n", err)
 			}
-			assert.DeepEqual(t, []byte{98, 108, 111, 98, 32, 54, 0, 102, 111, 111, 98, 97, 114}, tt.b.serializedData)
+			assert.DeepEqual(t, []byte{98, 108, 111, 98, 32, 54, 0, 102, 111, 111, 98, 97, 114}, tt.o.serializedData)
 		})
 	}
 }
 
 func TestHashObject(t *testing.T) {
 	t.Run("hash object", func(t *testing.T) {
-		r := New()
-		hash, err := r.HashObject("blob", []byte("hejsvejlolboll12345"), false)
+		r := NewRepo()
+		hash, err := r.HashObject("blob", bytes.NewBuffer([]byte("hejsvejlolboll12345")), false)
 		if err != nil {
 			fmt.Printf("error burri: %v\n", err)
 		}

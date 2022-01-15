@@ -1,10 +1,15 @@
 package git
 
 import (
+	"bytes"
+	"compress/zlib"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type gitRepository struct {
@@ -12,8 +17,19 @@ type gitRepository struct {
 	gitDir   string
 }
 
-func New() *gitRepository {
-	return &gitRepository{}
+func NewRepo() *gitRepository {
+	gitpath, err := FindGitDir(".")
+	if err != nil {
+		log.Fatalf("err finding git dir: %v", err)
+	}
+	return &gitRepository{
+		gitDir:   gitpath,
+		worktree: strings.TrimSuffix(gitpath, ".git"),
+	}
+}
+
+func (r *gitRepository) Gitdir() string {
+	return r.gitDir
 }
 
 func (r *gitRepository) repoDir(path string, create bool) (*string, error) {
@@ -39,7 +55,7 @@ func (r *gitRepository) repoPath(path string) string {
 	return filepath.Join(r.gitDir, path)
 }
 
-func (r *gitRepository) repoFile(path string, create bool) string {
+func (r *gitRepository) RepoFile(path string, create bool) string {
 	_, err := r.repoDir(filepath.Dir(path), create)
 	if err != nil {
 		return ""
@@ -56,4 +72,41 @@ func isEmptyDir(path string) bool {
 
 	_, err = f.Readdir(1)
 	return err == io.EOF
+}
+
+func FindGitDir(path string) (string, error) {
+	if p, _ := filepath.Abs(path); p == "/" {
+		return "", fmt.Errorf("no git repo found")
+	}
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return "", err
+	}
+
+	for _, f := range files {
+		if f.Name() == ".git" && f.IsDir() {
+			return strings.Join([]string{path, f.Name()}, "/"), nil
+		}
+	}
+
+	path, err = FindGitDir(filepath.Join(path, ".."))
+	if err != nil {
+		return "", err
+	}
+
+	return path, nil
+}
+
+func ReadGitFile(hash string) io.ReadCloser {
+	r := NewRepo()
+	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
+	f, err := os.ReadFile(objpath)
+	if err != nil {
+		log.Fatalf("error reading file: %v", err)
+	}
+	zread, err := zlib.NewReader(bytes.NewReader(f))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return zread
 }

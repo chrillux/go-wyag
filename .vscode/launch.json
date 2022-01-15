@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["init", "hej"]
+            "args": ["cat-file", "028de97e4bde13ca950e33ac5c485001578e9629"]
         }
     ]
 }

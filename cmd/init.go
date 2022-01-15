@@ -17,7 +17,7 @@ var initCmd = &cobra.Command{
 		if len(args) == 0 {
 			args = append(args, ".")
 		}
-		gr := git.New()
+		gr := git.NewRepo()
 		err := gr.Init(args[0], true)
 		if err != nil {
 			fmt.Printf("error running init: %v\n", err)

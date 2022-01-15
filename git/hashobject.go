@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 )
 
-func (r *gitRepository) HashObject(objType string, data []byte, write bool) (*string, error) {
-	o := NewObject(objType)
+func (r *gitRepository) HashObject(objType string, data io.Reader, write bool) (*string, error) {
+	o := Object{objType: objType}
 	err := o.serialize(data)
 	if err != nil {
 		return nil, fmt.Errorf("problem serializing object: %v", err)
@@ -17,7 +17,7 @@ func (r *gitRepository) HashObject(objType string, data []byte, write bool) (*st
 
 	hash := o.getHash()
 	if write {
-		path := r.repoFile(filepath.Join("objects", hash[0:2], hash[2:]), true)
+		path := r.RepoFile(filepath.Join("objects", hash[0:2], hash[2:]), true)
 		f, err := os.Create(path)
 		if err != nil {
 			return nil, err
