@@ -16,19 +16,22 @@ import (
 )
 
 type Object struct {
-	repo             *gitRepository
-	data             io.Reader
-	serializedData   []byte
-	deserializedData []byte
-	dataLen          int
-	hash             string
-	objType          string
+	obj     ObjectI
+	objType string
+	repo    *Repository
 }
 
-func NewObject(repo *gitRepository, data io.Reader, objType string) *Object {
+type ObjectI interface {
+	Serialize() io.Reader
+	Deserialize(data io.Reader)
+	GetParents() []string
+	String() string
+}
+
+func NewObject(repo *Repository, object ObjectI, objType string) *Object {
 	o := &Object{
 		repo:    repo,
-		data:    data,
+		obj:     object,
 		objType: objType,
 	}
 	return o
@@ -71,13 +74,17 @@ func ReadObject(hash string) (*Object, error) {
 		return nil, fmt.Errorf("malformed object %s: bad length", hash)
 	}
 
+	data := bytes.NewReader(buf[inull+1:])
 	switch objType {
 	case "blob":
-		return NewObject(r, bytes.NewReader(buf[inull+1:]), objType), nil
+		return NewObject(r, NewBlobObject(r, data), "blob"), nil
+	case "commit":
+		return NewObject(r, NewCommitObject(r, data), "commit"), nil
 	}
 	return nil, nil
 }
 
+// WriteObject by computing the hash, insert header and zlib compress everything. The last part is optional.
 func (o *Object) WriteObject(write bool) (*string, error) {
 	dataReader := o.Serialize()
 	dataBytes, err := ioutil.ReadAll(dataReader)
@@ -99,6 +106,7 @@ func (o *Object) WriteObject(write bool) (*string, error) {
 		if err != nil {
 			return nil, err
 		}
+		// TBD write the data to the file.
 		// err = writeData(zlib.NewWriter(f), o.getSerializedData())
 		// if err != nil {
 		// 	return nil, fmt.Errorf("error writing file: %v", err)
@@ -108,30 +116,12 @@ func (o *Object) WriteObject(write bool) (*string, error) {
 	return &hash, nil
 }
 
-func (o *Object) serialize(data io.Reader) error {
-	buf, err := ioutil.ReadAll(data)
-	if err != nil {
-		return err
-	}
-	o.dataLen = len(buf)
-	sd := []byte(strings.Join([]string{o.objType, fmt.Sprintf("%d", o.dataLen)}, " "))
-	sd = append(sd, byte(0))
-	sd = append(sd, buf...)
-	o.hash = fmt.Sprintf("%x", sha1.Sum(sd))
-	o.serializedData = sd
-	return nil
-}
-
 func (o *Object) Deserialize(data io.Reader) {
-	o.data = data
-}
-
-func (o *Object) getHash() string {
-	return o.hash
+	o.obj.Deserialize(data)
 }
 
 func (o *Object) Serialize() io.Reader {
-	return o.data
+	return o.obj.Serialize()
 }
 
 func (o *Object) String() string {
@@ -143,8 +133,8 @@ func (o *Object) GetObjType() string {
 	return o.objType
 }
 
-func (o *Object) GetDeserializedData() string {
-	return string(o.deserializedData)
+func (o *Object) GetParents() []string {
+	return o.obj.GetParents()
 }
 
 type KVLM struct {
@@ -160,7 +150,6 @@ type KV struct {
 func ParseKeyValueListWithMessage(data io.Reader) *KVLM {
 	s := bufio.NewScanner(data)
 	curSlice := []string{}
-	var key string
 	messageFound := false
 	mSlice := []string{}
 
@@ -177,19 +166,16 @@ func ParseKeyValueListWithMessage(data io.Reader) *KVLM {
 			continue
 		} else if !strings.Contains(line, " ") {
 			kv.Value = strings.Join(curSlice, "\n")
-			fmt.Println(strings.Join(curSlice, "\n"))
 			kvlm.KeyValues = append(kvlm.KeyValues, kv)
 			messageFound = true
 			continue
 		} else if len(curSlice) > 0 {
-			fmt.Println(key, strings.Join(curSlice, "\n"))
 			kv.Value = strings.Join(curSlice, "\n")
 			kvlm.KeyValues = append(kvlm.KeyValues, kv)
 			curSlice = []string{}
 		}
 		lslice := strings.Split(line, " ")
 		if len(lslice) > 1 {
-			key = lslice[0]
 			kv.Key = lslice[0]
 			newSlice := []string{}
 			for i := 1; i < len(lslice); i++ {
@@ -200,4 +186,16 @@ func ParseKeyValueListWithMessage(data io.Reader) *KVLM {
 	}
 	kvlm.Message = strings.Join(mSlice, "\n")
 	return &kvlm
+}
+
+func KeyValueListWithMessageSerialize(kvlm KVLM) io.Reader {
+	ret := []byte{}
+	for _, kv := range kvlm.KeyValues {
+		ret = append(ret, []byte(kv.Key)...)
+		ret = append(ret, []byte(" ")...)
+		ret = append(ret, []byte(strings.ReplaceAll(kv.Value, "\n", "\n "))...)
+		ret = append(ret, []byte("\n")...)
+	}
+	ret = append(ret, []byte("\n")...)
+	return bytes.NewReader(ret)
 }

@@ -10,27 +10,27 @@ import (
 	"strings"
 )
 
-type gitRepository struct {
+type Repository struct {
 	worktree string
 	gitDir   string
 }
 
-func NewRepo() *gitRepository {
+func NewRepo() *Repository {
 	gitpath, err := FindGitDir(".")
 	if err != nil {
 		log.Fatalf("err finding git dir: %v", err)
 	}
-	return &gitRepository{
+	return &Repository{
 		gitDir:   gitpath,
 		worktree: strings.TrimSuffix(gitpath, ".git"),
 	}
 }
 
-func (r *gitRepository) Gitdir() string {
+func (r *Repository) Gitdir() string {
 	return r.gitDir
 }
 
-func (r *gitRepository) repoDir(path string, create bool) (*string, error) {
+func (r *Repository) repoDir(path string, create bool) (*string, error) {
 	path = r.repoPath(path)
 	fileinfo, err := os.Stat(path)
 	if err == nil { // file/dir exists
@@ -49,11 +49,11 @@ func (r *gitRepository) repoDir(path string, create bool) (*string, error) {
 	return &path, nil
 }
 
-func (r *gitRepository) repoPath(path string) string {
+func (r *Repository) repoPath(path string) string {
 	return filepath.Join(r.gitDir, path)
 }
 
-func (r *gitRepository) RepoFile(path string, create bool) string {
+func (r *Repository) RepoFile(path string, create bool) string {
 	_, err := r.repoDir(filepath.Dir(path), create)
 	if err != nil {
 		return ""

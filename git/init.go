@@ -8,7 +8,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func (r *gitRepository) Init(path string, force bool) error {
+func (r *Repository) Init(path string, force bool) error {
 	r.worktree = path
 	r.gitDir = filepath.Join(r.worktree, ".git")
 	fileinfo, err := os.Stat(r.gitDir)
@@ -34,7 +34,7 @@ func (r *gitRepository) Init(path string, force bool) error {
 	return err
 }
 
-func (r *gitRepository) create() error {
+func (r *Repository) create() error {
 	fileinfo, err := os.Stat(r.worktree)
 	if err == nil {
 		if !fileinfo.IsDir() {
