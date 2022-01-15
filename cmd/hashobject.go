@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/chrillux/go-wyag/git"
+	"github.com/chrillux/go-wyag/object"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,7 @@ func hashObject(args []string) {
 			log.Fatalf("error opening file %s, %v", arg, err)
 		}
 
-		o := git.NewObject(gr, git.NewBlobObject(gr, bytes.NewReader(f)), "blob")
+		o := object.NewObject(gr, object.NewBlobObject(gr, bytes.NewReader(f)), "blob")
 		hash, err := o.WriteObject(false)
 		if err != nil {
 			fmt.Printf("error running hash-object: %v\n", err)

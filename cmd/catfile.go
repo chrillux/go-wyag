@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chrillux/go-wyag/git"
+	"github.com/chrillux/go-wyag/object"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +56,7 @@ func init() {
 }
 
 func catFile(hash string) {
-	o, err := git.ReadObject(hash)
+	o, err := object.ReadObject(hash)
 	if err != nil {
 		log.Fatalf("error running cat-file: %v", err)
 	}

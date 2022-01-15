@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/chrillux/go-wyag/git"
+	"github.com/chrillux/go-wyag/object"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +53,7 @@ func logRecurse(repo *git.Repository, hash string, seen map[string]bool) {
 	}
 	seen[hash] = true
 
-	commit, err := git.ReadObject(hash)
+	commit, err := object.ReadObject(hash)
 	if err != nil {
 		log.Fatal(err)
 	}

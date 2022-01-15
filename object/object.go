@@ -1,4 +1,4 @@
-package git
+package object
 
 import (
 	"bufio"
@@ -13,12 +13,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/chrillux/go-wyag/git"
 )
 
 type Object struct {
 	obj     ObjectI
 	objType string
-	repo    *Repository
+	repo    *git.Repository
 }
 
 type ObjectI interface {
@@ -28,7 +30,7 @@ type ObjectI interface {
 	String() string
 }
 
-func NewObject(repo *Repository, object ObjectI, objType string) *Object {
+func NewObject(repo *git.Repository, object ObjectI, objType string) *Object {
 	o := &Object{
 		repo:    repo,
 		obj:     object,
@@ -40,7 +42,7 @@ func NewObject(repo *Repository, object ObjectI, objType string) *Object {
 // Readobject reads a hash and returns the corresponding object.
 // A git object structure is an object type, a space, the size as an int, a null byte, and the data.
 func ReadObject(hash string) (*Object, error) {
-	r := NewRepo()
+	r := git.NewRepo()
 	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
 	f, err := os.ReadFile(objpath)
 	if err != nil {

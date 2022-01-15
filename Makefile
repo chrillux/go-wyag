@@ -14,3 +14,5 @@ hash-object:
 
 log:
 	go run main.go log 1b9d56f40d94dba86bce7d91eb09db5de65223a4
+
+all: cat-file hash-object log

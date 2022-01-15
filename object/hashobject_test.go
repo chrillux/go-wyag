@@ -1,4 +1,4 @@
-package git
+package object
 
 // func TestBlobObject_serialize(t *testing.T) {
 // 	rd := bytes.NewBuffer([]byte("foobar"))
