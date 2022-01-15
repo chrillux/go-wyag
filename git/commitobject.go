@@ -16,7 +16,6 @@ func NewCommitObject(repo *Repository, data io.Reader) *commitObject {
 	o := &commitObject{
 		repo:    repo,
 		data:    data,
-		kvlm:    ParseKeyValueListWithMessage(data),
 		objType: "commit",
 	}
 	return o
@@ -36,6 +35,7 @@ func (o *commitObject) String() string {
 }
 
 func (o *commitObject) GetParents() []string {
+	o.Deserialize(o.data)
 	p := []string{}
 	for _, kv := range o.kvlm.KeyValues {
 		if kv.Key == "parent" {
