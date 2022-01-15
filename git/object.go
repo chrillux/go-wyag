@@ -34,6 +34,8 @@ func NewObject(repo *gitRepository, data io.Reader, objType string) *Object {
 	return o
 }
 
+// Readobject reads a hash and returns the corresponding object.
+// A git object structure is an object type, a space, the size as an int, a null byte, and the data.
 func ReadObject(hash string) (*Object, error) {
 	r := NewRepo()
 	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
@@ -74,6 +76,36 @@ func ReadObject(hash string) (*Object, error) {
 		return NewObject(r, bytes.NewReader(buf[inull+1:]), objType), nil
 	}
 	return nil, nil
+}
+
+func (o *Object) WriteObject(write bool) (*string, error) {
+	dataReader := o.Serialize()
+	dataBytes, err := ioutil.ReadAll(dataReader)
+	if err != nil {
+		return nil, err
+	}
+	result := []byte(strings.Join([]string{o.GetObjType(), " ", fmt.Sprintf("%d", len(dataBytes))}, ""))
+	result = append(result, byte(0))
+	result = append(result, dataBytes...)
+	hash := fmt.Sprintf("%x", sha1.Sum(result))
+
+	if write {
+		path := o.repo.RepoFile(filepath.Join("objects", hash[0:2], hash[2:]), true)
+		f, err := os.Create(path)
+		if err != nil {
+			return nil, err
+		}
+		err = f.Chmod(os.FileMode(0644))
+		if err != nil {
+			return nil, err
+		}
+		// err = writeData(zlib.NewWriter(f), o.getSerializedData())
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error writing file: %v", err)
+		// }
+		// f.Close()
+	}
+	return &hash, nil
 }
 
 func (o *Object) serialize(data io.Reader) error {

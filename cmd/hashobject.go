@@ -32,12 +32,13 @@ func hashObject(args []string) {
 		if err != nil {
 			log.Fatalf("error opening file %s, %v", arg, err)
 		}
-		fb := bytes.NewBuffer(f)
-		h, err := gr.HashObject("blob", fb, false)
+
+		o := git.NewObject(gr, bytes.NewReader(f), "blob")
+		hash, err := o.WriteObject(false)
 		if err != nil {
-			fmt.Printf("error running init: %v\n", err)
+			fmt.Printf("error running hash-object: %v\n", err)
 			return
 		}
-		fmt.Printf("%s\n", *h)
+		fmt.Println(*hash)
 	}
 }
