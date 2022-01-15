@@ -3,20 +3,77 @@ package git
 import (
 	"bufio"
 	"bytes"
+	"compress/zlib"
 	"crypto/sha1"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 type Object struct {
+	repo             *gitRepository
+	data             io.Reader
 	serializedData   []byte
 	deserializedData []byte
 	dataLen          int
 	hash             string
 	objType          string
+}
+
+func NewObject(repo *gitRepository, data io.Reader, objType string) *Object {
+	o := &Object{
+		repo:    repo,
+		data:    data,
+		objType: objType,
+	}
+	return o
+}
+
+func ReadObject(hash string) (*Object, error) {
+	r := NewRepo()
+	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
+	f, err := os.ReadFile(objpath)
+	if err != nil {
+		log.Fatalf("error reading file: %v", err)
+	}
+	zread, err := zlib.NewReader(bytes.NewReader(f))
+	if err != nil {
+		log.Fatal(err)
+	}
+	buf, err := ioutil.ReadAll(zread)
+	if err != nil {
+		return nil, err
+	}
+	// byte 32 is a space
+	ispace := bytes.IndexByte(buf, byte(32))
+	if ispace < 0 {
+		return nil, fmt.Errorf("not valid git object data")
+	}
+	objType := string(buf[0:ispace])
+
+	// byte 0 is a null byte
+	inull := bytes.IndexByte(buf, byte(0))
+	if inull < 0 {
+		return nil, fmt.Errorf("not valid git object data")
+	}
+	size, err := strconv.Atoi(string(buf[ispace+1 : inull]))
+	if err != nil {
+		return nil, err
+	}
+	if size != len(buf)-inull-1 {
+		return nil, fmt.Errorf("malformed object %s: bad length", hash)
+	}
+
+	switch objType {
+	case "blob":
+		return NewObject(r, bytes.NewReader(buf[inull+1:]), objType), nil
+	}
+	return nil, nil
 }
 
 func (o *Object) serialize(data io.Reader) error {
@@ -33,36 +90,21 @@ func (o *Object) serialize(data io.Reader) error {
 	return nil
 }
 
-func (o *Object) deserialize(data io.Reader) error {
-	buf, err := ioutil.ReadAll(data)
-	if err != nil {
-		return err
-	}
-	ispace := bytes.IndexByte(buf, byte(32))
-	if ispace < 0 {
-		return fmt.Errorf("could not deserialize data")
-	}
-	o.objType = string(buf[0:ispace])
-
-	inull := bytes.IndexByte(buf, byte(0))
-	if inull < 0 {
-		return fmt.Errorf("could not deserialize data")
-	}
-	o.dataLen, err = strconv.Atoi(string(buf[ispace+1 : inull]))
-	if err != nil {
-		return err
-	}
-	o.deserializedData = buf[inull+1:]
-
-	return nil
+func (o *Object) Deserialize(data io.Reader) {
+	o.data = data
 }
 
 func (o *Object) getHash() string {
 	return o.hash
 }
 
-func (o *Object) getSerializedData() []byte {
-	return o.serializedData
+func (o *Object) Serialize() io.Reader {
+	return o.data
+}
+
+func (o *Object) String() string {
+	s, _ := ioutil.ReadAll(o.Serialize())
+	return string(s)
 }
 
 func (o *Object) GetObjType() string {

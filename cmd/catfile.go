@@ -56,14 +56,13 @@ func init() {
 }
 
 func catFile(hash string) {
-	zread := git.ReadGitFile(hash)
-	o, err := git.CatFile(zread)
+	o, err := git.ReadObject(hash)
 	if err != nil {
 		log.Fatalf("error running cat-file: %v", err)
 	}
 	if printType {
-		fmt.Printf("%s\n", o.GetObjType())
+		fmt.Println(o.GetObjType())
 	} else {
-		fmt.Printf("%s", o.GetDeserializedData())
+		fmt.Println(o)
 	}
 }

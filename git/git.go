@@ -1,8 +1,6 @@
 package git
 
 import (
-	"bytes"
-	"compress/zlib"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -95,18 +93,4 @@ func FindGitDir(path string) (string, error) {
 	}
 
 	return path, nil
-}
-
-func ReadGitFile(hash string) io.ReadCloser {
-	r := NewRepo()
-	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
-	f, err := os.ReadFile(objpath)
-	if err != nil {
-		log.Fatalf("error reading file: %v", err)
-	}
-	zread, err := zlib.NewReader(bytes.NewReader(f))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return zread
 }

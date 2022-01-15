@@ -1,7 +1,6 @@
 package git
 
 import (
-	"compress/zlib"
 	"fmt"
 	"io"
 	"os"
@@ -26,20 +25,20 @@ func (r *gitRepository) HashObject(objType string, data io.Reader, write bool) (
 		if err != nil {
 			return nil, err
 		}
-		err = writeData(zlib.NewWriter(f), o.getSerializedData())
-		if err != nil {
-			return nil, fmt.Errorf("error writing file: %v", err)
-		}
-		f.Close()
+		// err = writeData(zlib.NewWriter(f), o.getSerializedData())
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error writing file: %v", err)
+		// }
+		// f.Close()
 	}
 	return &hash, nil
 }
 
-func writeData(f io.WriteCloser, dataToWrite []byte) error {
-	defer f.Close()
-	_, err := f.Write(dataToWrite)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func writeData(f io.WriteCloser, dataToWrite []byte) error {
+// 	defer f.Close()
+// 	_, err := f.Write(dataToWrite)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
