@@ -9,8 +9,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
-            "args": ["cat-file", "028de97e4bde13ca950e33ac5c485001578e9629"]
+            "program": "${workspaceFolder}/main.go",
+            "args": ["cat-file", "02a32a7bc48d64a5b9f04aa5aeea5d91929865d0"]
         }
     ]
 }

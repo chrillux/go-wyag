@@ -8,16 +8,14 @@ import (
 )
 
 type blobObject struct {
-	repo    *git.Repository
-	data    io.Reader
-	objType string
+	repo *git.Repository
+	data io.Reader
 }
 
 func NewBlobObject(repo *git.Repository, data io.Reader) *blobObject {
 	o := &blobObject{
-		repo:    repo,
-		data:    data,
-		objType: "blob",
+		repo: repo,
+		data: data,
 	}
 	return o
 }

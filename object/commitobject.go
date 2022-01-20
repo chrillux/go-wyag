@@ -8,17 +8,15 @@ import (
 )
 
 type commitObject struct {
-	repo    *git.Repository
-	data    io.Reader
-	kvlm    *KVLM
-	objType string
+	repo *git.Repository
+	data io.Reader
+	kvlm *KVLM
 }
 
 func NewCommitObject(repo *git.Repository, data io.Reader) *commitObject {
 	o := &commitObject{
-		repo:    repo,
-		data:    data,
-		objType: "commit",
+		repo: repo,
+		data: data,
 	}
 	return o
 }
