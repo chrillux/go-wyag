@@ -1,10 +1,10 @@
 .PHONY: build clean cat-file hash-object log
 
-clean:
-	rm wyag
-
 build:
 	go build -o wyag main.go
+
+clean:
+	rm wyag
 
 cat-file:
 	go run main.go cat-file -t 028de97e4bde13ca950e33ac5c485001578e9629
