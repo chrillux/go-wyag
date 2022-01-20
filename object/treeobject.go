@@ -10,8 +10,9 @@ import (
 )
 
 type treeObject struct {
-	repo *git.Repository
-	data io.Reader
+	repo  *git.Repository
+	data  io.Reader
+	items []gitTreeLeaf
 }
 
 // gitTreeLeaf is a single tree record, i.e a single path or file.
@@ -51,7 +52,7 @@ func treeParse(raw io.Reader) []gitTreeLeaf {
 	return treeleafs
 }
 
-func treeSerialize(gtls []gitTreeLeaf) []byte {
+func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 	ret := []byte{}
 	for _, gtl := range gtls {
 		ret = append(ret, []byte(gtl.mode)...)
@@ -61,7 +62,7 @@ func treeSerialize(gtls []gitTreeLeaf) []byte {
 		shabytes, _ := hex.DecodeString(gtl.sha)
 		ret = append(ret, shabytes...)
 	}
-	return ret
+	return bytes.NewReader(ret)
 }
 
 func NewTreeObject(repo *git.Repository, data io.Reader) *treeObject {
@@ -73,11 +74,11 @@ func NewTreeObject(repo *git.Repository, data io.Reader) *treeObject {
 }
 
 func (o *treeObject) Deserialize(data io.Reader) {
-	// tbd
+	o.items = treeParse(data)
 }
 
 func (o *treeObject) Serialize() io.Reader {
-	return o.data
+	return treeSerialize(o.items)
 }
 
 func (o *treeObject) String() string {
