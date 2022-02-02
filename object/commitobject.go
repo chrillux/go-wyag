@@ -14,11 +14,10 @@ type commitObject struct {
 }
 
 func NewCommitObject(repo *git.Repository, data io.Reader) *commitObject {
-	o := &commitObject{
+	return &commitObject{
 		repo: repo,
 		data: data,
 	}
-	return o
 }
 
 func (o *commitObject) Deserialize(data io.Reader) {

@@ -31,12 +31,11 @@ type ObjectI interface {
 }
 
 func NewObject(repo *git.Repository, object ObjectI, objType string) *Object {
-	o := &Object{
+	return &Object{
 		repo:    repo,
 		obj:     object,
 		objType: objType,
 	}
-	return o
 }
 
 // Readobject reads a hash and returns the corresponding object.

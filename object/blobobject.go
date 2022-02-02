@@ -13,11 +13,10 @@ type blobObject struct {
 }
 
 func NewBlobObject(repo *git.Repository, data io.Reader) *blobObject {
-	o := &blobObject{
+	return &blobObject{
 		repo: repo,
 		data: data,
 	}
-	return o
 }
 
 func (o *blobObject) Deserialize(data io.Reader) {

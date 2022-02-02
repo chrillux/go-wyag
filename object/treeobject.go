@@ -66,11 +66,10 @@ func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 }
 
 func NewTreeObject(repo *git.Repository, data io.Reader) *treeObject {
-	o := &treeObject{
+	return &treeObject{
 		repo: repo,
 		data: data,
 	}
-	return o
 }
 
 func (o *treeObject) Deserialize(data io.Reader) {
