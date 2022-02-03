@@ -9,7 +9,7 @@ import (
 	"github.com/chrillux/go-wyag/git"
 )
 
-type treeObject struct {
+type TreeObject struct {
 	repo  *git.Repository
 	data  io.Reader
 	items []gitTreeLeaf
@@ -20,6 +20,16 @@ type gitTreeLeaf struct {
 	mode string
 	path string
 	sha  string
+}
+
+func (g *gitTreeLeaf) Mode() string {
+	return g.mode
+}
+func (g *gitTreeLeaf) Path() string {
+	return g.path
+}
+func (g *gitTreeLeaf) SHA() string {
+	return g.sha
 }
 
 // treeParseOne a tree is a concatenation of records of the format: [mode] space [path] 0x00 [sha-1]
@@ -65,26 +75,31 @@ func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 	return bytes.NewReader(ret)
 }
 
-func NewTreeObject(repo *git.Repository, data io.Reader) *treeObject {
-	return &treeObject{
+func NewTreeObject(repo *git.Repository, data io.Reader) *TreeObject {
+	return &TreeObject{
 		repo: repo,
 		data: data,
 	}
 }
 
-func (o *treeObject) Deserialize(data io.Reader) {
+func (o *TreeObject) Deserialize(data io.Reader) {
 	o.items = treeParse(data)
 }
 
-func (o *treeObject) Serialize() io.Reader {
+func (o *TreeObject) Serialize() io.Reader {
 	return treeSerialize(o.items)
 }
 
-func (o *treeObject) String() string {
+func (o *TreeObject) String() string {
 	s, _ := ioutil.ReadAll(o.Serialize())
 	return string(s)
 }
 
-func (o *treeObject) GetParents() []string {
+func (o *TreeObject) GetParents() []string {
 	return nil
+}
+
+func (o *TreeObject) Items() []gitTreeLeaf {
+	o.Deserialize(o.data)
+	return o.items
 }

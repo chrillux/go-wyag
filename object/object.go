@@ -202,3 +202,7 @@ func KeyValueListWithMessageSerialize(kvlm KVLM) io.Reader {
 	ret = append(ret, []byte("\n")...)
 	return bytes.NewReader(ret)
 }
+
+func (o *Object) Obj() ObjectI {
+	return o.obj
+}
