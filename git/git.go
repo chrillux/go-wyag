@@ -68,6 +68,7 @@ func isEmptyDir(path string) bool {
 	}
 	defer f.Close()
 
+	// try to read one file from dir. If the dir is empty it will return a io.EOF error.
 	_, err = f.Readdir(1)
 	return err == io.EOF
 }
