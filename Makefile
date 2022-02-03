@@ -18,4 +18,4 @@ log:
 ls-tree:
 	go run main.go ls-tree 74db73dfc84b01ec0ddbdaaf18da87465e76b705
 
-all: cat-file hash-object log
+all: cat-file hash-object log ls-tree

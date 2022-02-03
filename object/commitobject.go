@@ -7,33 +7,33 @@ import (
 	"github.com/chrillux/go-wyag/git"
 )
 
-type commitObject struct {
+type CommitObject struct {
 	repo *git.Repository
 	data io.Reader
 	kvlm *KVLM
 }
 
-func NewCommitObject(repo *git.Repository, data io.Reader) *commitObject {
-	return &commitObject{
+func NewCommitObject(repo *git.Repository, data io.Reader) *CommitObject {
+	return &CommitObject{
 		repo: repo,
 		data: data,
 	}
 }
 
-func (o *commitObject) Deserialize(data io.Reader) {
+func (o *CommitObject) Deserialize(data io.Reader) {
 	o.kvlm = ParseKeyValueListWithMessage(data)
 }
 
-func (o *commitObject) Serialize() io.Reader {
+func (o *CommitObject) Serialize() io.Reader {
 	return KeyValueListWithMessageSerialize(*o.kvlm)
 }
 
-func (o *commitObject) String() string {
+func (o *CommitObject) String() string {
 	s, _ := ioutil.ReadAll(o.Serialize())
 	return string(s)
 }
 
-func (o *commitObject) GetParents() []string {
+func (o *CommitObject) GetParents() []string {
 	o.Deserialize(o.data)
 	p := []string{}
 	for _, kv := range o.kvlm.KeyValues {

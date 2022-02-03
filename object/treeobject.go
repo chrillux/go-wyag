@@ -95,10 +95,6 @@ func (o *TreeObject) String() string {
 	return string(s)
 }
 
-func (o *TreeObject) GetParents() []string {
-	return nil
-}
-
 func (o *TreeObject) Items() []gitTreeLeaf {
 	o.Deserialize(o.data)
 	return o.items

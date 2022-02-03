@@ -26,7 +26,6 @@ type Object struct {
 type ObjectI interface {
 	Serialize() io.Reader
 	Deserialize(data io.Reader)
-	GetParents() []string
 	String() string
 }
 
@@ -134,10 +133,6 @@ func (o *Object) String() string {
 
 func (o *Object) GetObjType() string {
 	return o.objType
-}
-
-func (o *Object) GetParents() []string {
-	return o.obj.GetParents()
 }
 
 type KVLM struct {
