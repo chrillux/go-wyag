@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-
-	"github.com/chrillux/go-wyag/git"
 )
 
 type TreeObject struct {
-	repo  *git.Repository
 	data  io.Reader
 	items []gitTreeLeaf
 }
@@ -76,9 +73,8 @@ func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 	return bytes.NewReader(ret)
 }
 
-func NewTreeObject(repo *git.Repository, data io.Reader) *TreeObject {
+func NewTreeObject(data io.Reader) *TreeObject {
 	to := &TreeObject{
-		repo: repo,
 		data: data,
 	}
 	to.Deserialize(to.data)

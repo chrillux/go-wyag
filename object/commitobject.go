@@ -3,19 +3,15 @@ package object
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/chrillux/go-wyag/git"
 )
 
 type CommitObject struct {
-	repo *git.Repository
 	data io.Reader
 	kvlm *KVLM
 }
 
-func NewCommitObject(repo *git.Repository, data io.Reader) *CommitObject {
+func NewCommitObject(data io.Reader) *CommitObject {
 	return &CommitObject{
-		repo: repo,
 		data: data,
 	}
 }

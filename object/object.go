@@ -64,11 +64,11 @@ func ReadObject(hash string) (ObjectI, error) {
 	data := bytes.NewReader(buf[inull+1:])
 	switch objType {
 	case "blob":
-		return NewBlobObject(r, data), nil
+		return NewBlobObject(data), nil
 	case "commit":
-		return NewCommitObject(r, data), nil
+		return NewCommitObject(data), nil
 	case "tree":
-		return NewTreeObject(r, data), nil
+		return NewTreeObject(data), nil
 	}
 	return nil, nil
 }

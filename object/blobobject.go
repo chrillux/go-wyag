@@ -3,18 +3,14 @@ package object
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/chrillux/go-wyag/git"
 )
 
 type blobObject struct {
-	repo *git.Repository
 	data io.Reader
 }
 
-func NewBlobObject(repo *git.Repository, data io.Reader) *blobObject {
+func NewBlobObject(data io.Reader) *blobObject {
 	return &blobObject{
-		repo: repo,
 		data: data,
 	}
 }
