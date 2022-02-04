@@ -34,8 +34,8 @@ func hashObject(args []string) {
 			log.Fatalf("error opening file %s, %v", arg, err)
 		}
 
-		o := object.NewObject(gr, object.NewBlobObject(gr, bytes.NewReader(f)), "blob")
-		hash, err := o.WriteObject(false)
+		o := object.NewBlobObject(gr, bytes.NewReader(f))
+		hash, err := object.WriteObject(o, gr, false)
 		if err != nil {
 			fmt.Printf("error running hash-object: %v\n", err)
 			return

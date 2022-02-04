@@ -17,29 +17,16 @@ import (
 	"github.com/chrillux/go-wyag/git"
 )
 
-type Object struct {
-	obj     ObjectI
-	objType string
-	repo    *git.Repository
-}
-
 type ObjectI interface {
 	Serialize() io.Reader
 	Deserialize(data io.Reader)
+	GetObjType() string
 	String() string
-}
-
-func NewObject(repo *git.Repository, object ObjectI, objType string) *Object {
-	return &Object{
-		repo:    repo,
-		obj:     object,
-		objType: objType,
-	}
 }
 
 // Readobject reads a hash and returns the corresponding object.
 // A git object structure is an object type, a space, the size as an int, a null byte, and the data.
-func ReadObject(hash string) (*Object, error) {
+func ReadObject(hash string) (ObjectI, error) {
 	r := git.NewRepo()
 	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
 	f, err := os.ReadFile(objpath)
@@ -77,17 +64,17 @@ func ReadObject(hash string) (*Object, error) {
 	data := bytes.NewReader(buf[inull+1:])
 	switch objType {
 	case "blob":
-		return NewObject(r, NewBlobObject(r, data), objType), nil
+		return NewBlobObject(r, data), nil
 	case "commit":
-		return NewObject(r, NewCommitObject(r, data), objType), nil
+		return NewCommitObject(r, data), nil
 	case "tree":
-		return NewObject(r, NewTreeObject(r, data), objType), nil
+		return NewTreeObject(r, data), nil
 	}
 	return nil, nil
 }
 
 // WriteObject by computing the hash, insert header and zlib compress everything. The last part is optional.
-func (o *Object) WriteObject(write bool) (*string, error) {
+func WriteObject(o ObjectI, repo *git.Repository, write bool) (*string, error) {
 	dataReader := o.Serialize()
 	dataBytes, err := ioutil.ReadAll(dataReader)
 	if err != nil {
@@ -99,7 +86,7 @@ func (o *Object) WriteObject(write bool) (*string, error) {
 	hash := fmt.Sprintf("%x", sha1.Sum(result))
 
 	if write {
-		path := o.repo.RepoFile(filepath.Join("objects", hash[0:2], hash[2:]), true)
+		path := repo.RepoFile(filepath.Join("objects", hash[0:2], hash[2:]), true)
 		f, err := os.Create(path)
 		if err != nil {
 			return nil, err
@@ -116,23 +103,6 @@ func (o *Object) WriteObject(write bool) (*string, error) {
 		// f.Close()
 	}
 	return &hash, nil
-}
-
-func (o *Object) Deserialize(data io.Reader) {
-	o.obj.Deserialize(data)
-}
-
-func (o *Object) Serialize() io.Reader {
-	return o.obj.Serialize()
-}
-
-func (o *Object) String() string {
-	s, _ := ioutil.ReadAll(o.Serialize())
-	return string(s)
-}
-
-func (o *Object) GetObjType() string {
-	return o.objType
 }
 
 type KVLM struct {
@@ -196,8 +166,4 @@ func KeyValueListWithMessageSerialize(kvlm KVLM) io.Reader {
 	}
 	ret = append(ret, []byte("\n")...)
 	return bytes.NewReader(ret)
-}
-
-func (o *Object) Obj() ObjectI {
-	return o.obj
 }

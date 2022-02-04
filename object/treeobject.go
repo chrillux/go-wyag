@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -76,10 +77,12 @@ func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 }
 
 func NewTreeObject(repo *git.Repository, data io.Reader) *TreeObject {
-	return &TreeObject{
+	to := &TreeObject{
 		repo: repo,
 		data: data,
 	}
+	to.Deserialize(to.data)
+	return to
 }
 
 func (o *TreeObject) Deserialize(data io.Reader) {
@@ -91,11 +94,17 @@ func (o *TreeObject) Serialize() io.Reader {
 }
 
 func (o *TreeObject) String() string {
-	s, _ := ioutil.ReadAll(o.Serialize())
-	return string(s)
+	var treeobjAsString string
+	for _, item := range o.Items() {
+		treeobjAsString += fmt.Sprintf("%s\n", item)
+	}
+	return treeobjAsString
+}
+
+func (o *TreeObject) GetObjType() string {
+	return "tree"
 }
 
 func (o *TreeObject) Items() []gitTreeLeaf {
-	o.Deserialize(o.data)
 	return o.items
 }

@@ -31,3 +31,7 @@ func (o *blobObject) String() string {
 	s, _ := ioutil.ReadAll(o.Serialize())
 	return string(s)
 }
+
+func (o *blobObject) GetObjType() string {
+	return "blob"
+}

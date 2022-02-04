@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["cat-file", "02a32a7bc48d64a5b9f04aa5aeea5d91929865d0"]
+            "args": ["checkout", "58792402d1a4afd6cd54c9d6709001564796d069", "foo"]
         }
     ]
 }

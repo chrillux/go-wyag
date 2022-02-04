@@ -1,6 +1,7 @@
 package object
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"reflect"
@@ -13,7 +14,7 @@ func getData() io.Reader {
 	if err != nil {
 		log.Fatalf("error reading object: %v", err)
 	}
-	return o.obj.Serialize()
+	return o.Serialize()
 }
 
 func Test_treeParseOne(t *testing.T) {
@@ -99,7 +100,7 @@ func Test_treeSerialize(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []byte
+		want io.Reader
 	}{
 		{
 			name: "Serialize a tree object",
@@ -112,9 +113,9 @@ func Test_treeSerialize(t *testing.T) {
 					},
 				},
 			},
-			want: []byte{
+			want: bytes.NewReader([]byte{
 				49, 48, 48, 54, 52, 52, 32, 102, 111, 111, 46, 115, 104, 0, 2, 163, 42, 123, 196, 141, 100, 165, 185, 240, 74, 165, 174, 234, 93, 145, 146, 152, 101, 208,
-			},
+			}),
 		},
 	}
 	for _, tt := range tests {

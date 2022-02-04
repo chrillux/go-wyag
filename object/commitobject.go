@@ -33,6 +33,10 @@ func (o *CommitObject) String() string {
 	return string(s)
 }
 
+func (o *CommitObject) GetObjType() string {
+	return "commit"
+}
+
 func (o *CommitObject) GetParents() []string {
 	o.Deserialize(o.data)
 	p := []string{}
@@ -42,4 +46,9 @@ func (o *CommitObject) GetParents() []string {
 		}
 	}
 	return p
+}
+
+func (o *CommitObject) KVLM() *KVLM {
+	o.Deserialize(o.data)
+	return o.kvlm
 }
