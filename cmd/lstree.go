@@ -33,7 +33,7 @@ func lstree(hash string) {
 		log.Fatalf("object %s is not a tree object", hash)
 	}
 
-	o := obj.(*object.TreeObject)
+	o := obj.(*object.Tree)
 	for _, item := range o.Items() {
 		i, err := object.ReadObject(item.SHA())
 		if err != nil {

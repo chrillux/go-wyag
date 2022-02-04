@@ -37,7 +37,7 @@ func checkout(commitsha, path string) {
 		log.Fatalf("object %s is not a commit object", commitsha)
 	}
 
-	commitObject := obj.(*object.CommitObject)
+	commitObject := obj.(*object.Commit)
 	treeObject, err := findTreeObject(commitObject)
 	if err != nil {
 		log.Fatal(err)
@@ -67,14 +67,14 @@ func checkout(commitsha, path string) {
 	treeCheckout(treeObject, path)
 }
 
-func findTreeObject(commitObject *object.CommitObject) (*object.TreeObject, error) {
+func findTreeObject(commitObject *object.Commit) (*object.Tree, error) {
 	for _, kvlm := range commitObject.KVLM().KeyValues {
 		if kvlm.Key == "tree" {
 			to, err := object.ReadObject(kvlm.Value)
 			if err != nil {
 				return nil, fmt.Errorf("could not read tree object")
 			}
-			treeObject, ok := to.(*object.TreeObject)
+			treeObject, ok := to.(*object.Tree)
 			if !ok {
 				return nil, fmt.Errorf("invalid tree object")
 			}
@@ -84,7 +84,7 @@ func findTreeObject(commitObject *object.CommitObject) (*object.TreeObject, erro
 	return nil, fmt.Errorf("could not find tree object")
 }
 
-func treeCheckout(treeObject *object.TreeObject, path string) {
+func treeCheckout(treeObject *object.Tree, path string) {
 	for _, item := range treeObject.Items() {
 		o, err := object.ReadObject(item.SHA())
 		if err != nil {
@@ -92,7 +92,7 @@ func treeCheckout(treeObject *object.TreeObject, path string) {
 		}
 		dest := filepath.Join(path, item.Path())
 		if o.GetObjType() == "tree" {
-			treeobj := o.(*object.TreeObject)
+			treeobj := o.(*object.Tree)
 			os.MkdirAll(dest, 0755)
 			treeCheckout(treeobj, dest)
 		} else if o.GetObjType() == "blob" {

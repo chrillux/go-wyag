@@ -5,35 +5,35 @@ import (
 	"io/ioutil"
 )
 
-type CommitObject struct {
+type Commit struct {
 	data io.Reader
 	kvlm *KVLM
 }
 
-func NewCommitObject(data io.Reader) *CommitObject {
-	return &CommitObject{
+func NewCommitObject(data io.Reader) *Commit {
+	return &Commit{
 		data: data,
 	}
 }
 
-func (o *CommitObject) Deserialize(data io.Reader) {
+func (o *Commit) Deserialize(data io.Reader) {
 	o.kvlm = ParseKeyValueListWithMessage(data)
 }
 
-func (o *CommitObject) Serialize() io.Reader {
+func (o *Commit) Serialize() io.Reader {
 	return KeyValueListWithMessageSerialize(*o.kvlm)
 }
 
-func (o *CommitObject) String() string {
+func (o *Commit) String() string {
 	s, _ := ioutil.ReadAll(o.Serialize())
 	return string(s)
 }
 
-func (o *CommitObject) GetObjType() string {
+func (o *Commit) GetObjType() string {
 	return "commit"
 }
 
-func (o *CommitObject) GetParents() []string {
+func (o *Commit) GetParents() []string {
 	o.Deserialize(o.data)
 	p := []string{}
 	for _, kv := range o.kvlm.KeyValues {
@@ -44,7 +44,7 @@ func (o *CommitObject) GetParents() []string {
 	return p
 }
 
-func (o *CommitObject) KVLM() *KVLM {
+func (o *Commit) KVLM() *KVLM {
 	o.Deserialize(o.data)
 	return o.kvlm
 }

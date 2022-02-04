@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 )
 
-type TreeObject struct {
+type Tree struct {
 	data  io.Reader
 	items []gitTreeLeaf
 }
@@ -73,23 +73,23 @@ func treeSerialize(gtls []gitTreeLeaf) io.Reader {
 	return bytes.NewReader(ret)
 }
 
-func NewTreeObject(data io.Reader) *TreeObject {
-	to := &TreeObject{
+func NewTreeObject(data io.Reader) *Tree {
+	to := &Tree{
 		data: data,
 	}
 	to.Deserialize(to.data)
 	return to
 }
 
-func (o *TreeObject) Deserialize(data io.Reader) {
+func (o *Tree) Deserialize(data io.Reader) {
 	o.items = treeParse(data)
 }
 
-func (o *TreeObject) Serialize() io.Reader {
+func (o *Tree) Serialize() io.Reader {
 	return treeSerialize(o.items)
 }
 
-func (o *TreeObject) String() string {
+func (o *Tree) String() string {
 	var treeobjAsString string
 	for _, item := range o.Items() {
 		treeobjAsString += fmt.Sprintf("%s\n", item)
@@ -97,10 +97,10 @@ func (o *TreeObject) String() string {
 	return treeobjAsString
 }
 
-func (o *TreeObject) GetObjType() string {
+func (o *Tree) GetObjType() string {
 	return "tree"
 }
 
-func (o *TreeObject) Items() []gitTreeLeaf {
+func (o *Tree) Items() []gitTreeLeaf {
 	return o.items
 }

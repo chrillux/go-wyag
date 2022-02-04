@@ -46,7 +46,7 @@ func logRecurse(repo *git.Repository, hash string, seen map[string]bool) {
 		log.Fatalf("object %s is not a commit", hash)
 	}
 
-	o := commit.(*object.CommitObject)
+	o := commit.(*object.Commit)
 	parents := o.GetParents()
 	// Base case: the initial commit.
 	if len(parents) == 0 {

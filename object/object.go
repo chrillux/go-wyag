@@ -64,7 +64,7 @@ func ReadObject(hash string) (ObjectI, error) {
 	data := bytes.NewReader(buf[inull+1:])
 	switch objType {
 	case "blob":
-		return NewBlobObject(data), nil
+		return NewBlob(data), nil
 	case "commit":
 		return NewCommitObject(data), nil
 	case "tree":
