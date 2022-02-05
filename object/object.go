@@ -27,7 +27,7 @@ type ObjectI interface {
 // Readobject reads a hash and returns the corresponding object.
 // A git object structure is an object type, a space, the size as an int, a null byte, and the data.
 func ReadObject(hash string) (ObjectI, error) {
-	r := git.NewRepo()
+	r := git.NewExistingRepo()
 	objpath := r.RepoFile(filepath.Join(r.Gitdir(), "objects", hash[0:2], hash[2:]), false)
 	f, err := os.ReadFile(objpath)
 	if err != nil {

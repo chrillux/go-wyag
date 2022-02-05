@@ -15,14 +15,18 @@ type Repository struct {
 	gitDir   string
 }
 
-func NewRepo() *Repository {
+func NewExistingRepo() *Repository {
 	gitpath, err := FindGitDir(".")
 	if err != nil {
 		log.Fatalf("err finding git dir: %v", err)
 	}
+	return NewRepo(strings.TrimSuffix(gitpath, ".git"))
+}
+
+func NewRepo(path string) *Repository {
 	return &Repository{
-		gitDir:   gitpath,
-		worktree: strings.TrimSuffix(gitpath, ".git"),
+		gitDir:   fmt.Sprintf("%s.git", path),
+		worktree: path,
 	}
 }
 

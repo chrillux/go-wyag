@@ -25,7 +25,7 @@ func init() {
 }
 
 func wyagLog(hash string) {
-	repo := git.NewRepo()
+	repo := git.NewExistingRepo()
 	seen := map[string]bool{}
 	fmt.Print("digraph wyaglog{")
 	logRecurse(repo, hash, seen)

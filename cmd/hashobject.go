@@ -28,7 +28,7 @@ func init() {
 
 func hashObject(args []string) {
 	for _, arg := range args {
-		gr := git.NewRepo()
+		gr := git.NewExistingRepo()
 		f, err := os.ReadFile(arg)
 		if err != nil {
 			log.Fatalf("error opening file %s, %v", arg, err)

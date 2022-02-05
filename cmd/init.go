@@ -23,14 +23,17 @@ func init() {
 }
 
 func wyagInit(args []string) {
+	var path string
 	if len(args) == 0 {
-		args = append(args, ".")
+		path = "."
+	} else {
+		path = args[0]
 	}
-	gr := git.NewRepo()
-	err := gr.Init(args[0], true)
+	gr := git.NewRepo(path)
+	err := gr.Init(path, true)
 	if err != nil {
 		fmt.Printf("error running init: %v\n", err)
 		return
 	}
-	fmt.Printf("created repo %s\n", args[0])
+	fmt.Printf("created repo %s\n", path)
 }
