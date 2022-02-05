@@ -143,6 +143,19 @@ func (r *Repository) create() error {
 	return nil
 }
 
+func (r *Repository) RefResolve(ref string) string {
+	refpath := r.RepoFile(ref, false)
+	data, err := os.ReadFile(refpath)
+	if err != nil {
+		log.Fatalf("could not read file: %v", err)
+	}
+	sdata := string(data)
+	if strings.HasPrefix(sdata, "ref: ") {
+		return r.RefResolve(strings.TrimPrefix(sdata, "ref: "))
+	}
+	return sdata
+}
+
 func isEmptyDir(path string) bool {
 	f, err := os.Open(path)
 	if err != nil {

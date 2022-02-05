@@ -23,7 +23,7 @@ ls-tree:
 checkout:
 	go run main.go checkout 58792402d1a4afd6cd54c9d6709001564796d069 foo
 
-all: cat-file hash-object log ls-tree
+all: cat-file hash-object log ls-tree test
 
 test:
 	go test ./...
