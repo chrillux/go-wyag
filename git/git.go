@@ -144,37 +144,37 @@ func (r *Repository) create() error {
 }
 
 func (r *Repository) RefResolve(ref string) string {
-	refpath := r.RepoFile(ref, false)
-	data, err := os.ReadFile(refpath)
+	ref = r.repoPath(ref)
+	data, err := os.ReadFile(ref)
 	if err != nil {
 		log.Fatalf("could not read file: %v", err)
 	}
-	sdata := string(data)
+	sdata := strings.TrimSuffix(string(data), "\n")
 	if strings.HasPrefix(sdata, "ref: ") {
 		return r.RefResolve(strings.TrimPrefix(sdata, "ref: "))
 	}
-	sdata = strings.TrimSuffix(sdata, "\n")
 	return sdata
 }
 
 func (r *Repository) RefList() map[string]string {
 	refs := map[string]string{}
 	path, _ := r.repoDir("refs", false)
-	r.refListPath(path, refs)
+	r.refListPath(*path, refs)
 	return refs
 }
 
-func (r *Repository) refListPath(path *string, refs map[string]string) {
-	files, err := ioutil.ReadDir(*path)
+func (r *Repository) refListPath(path string, refs map[string]string) {
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, f := range files {
-		fullpath := filepath.Join(*path, f.Name())
+		fullpath := filepath.Join(path, f.Name())
 		if f.IsDir() {
-			r.refListPath(&fullpath, refs)
+			r.refListPath(fullpath, refs)
 		} else {
-			refs[strings.TrimPrefix(fullpath, fmt.Sprintf("%s/", filepath.Join(r.gitDir)))] = r.RefResolve(fullpath)
+			ref := strings.TrimPrefix(fullpath, fmt.Sprintf("%s/", filepath.Join(r.gitDir)))
+			refs[ref] = r.RefResolve(ref)
 		}
 	}
 }
