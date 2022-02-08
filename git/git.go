@@ -153,7 +153,30 @@ func (r *Repository) RefResolve(ref string) string {
 	if strings.HasPrefix(sdata, "ref: ") {
 		return r.RefResolve(strings.TrimPrefix(sdata, "ref: "))
 	}
+	sdata = strings.TrimSuffix(sdata, "\n")
 	return sdata
+}
+
+func (r *Repository) RefList() map[string]string {
+	refs := map[string]string{}
+	path, _ := r.repoDir("refs", false)
+	r.refListPath(path, refs)
+	return refs
+}
+
+func (r *Repository) refListPath(path *string, refs map[string]string) {
+	files, err := ioutil.ReadDir(*path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		fullpath := filepath.Join(*path, f.Name())
+		if f.IsDir() {
+			r.refListPath(&fullpath, refs)
+		} else {
+			refs[strings.TrimPrefix(fullpath, fmt.Sprintf("%s/", filepath.Join(r.gitDir)))] = r.RefResolve(fullpath)
+		}
+	}
 }
 
 func isEmptyDir(path string) bool {
